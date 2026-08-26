@@ -127,21 +127,30 @@ export default function Checkout({
                   Choisir une date
                 </option>
 
-                <option value="23-decembre">
-                  23 décembre
-                </option>
+                {Array.from({ length: 27 }, (_, i) => {
+                  const date = new Date(2026, 11, 10 + i)
 
-                <option value="24-decembre">
-                  24 décembre
-                </option>
+                  const value = date
+                    .toISOString()
+                    .slice(0, 10)
 
-                <option value="30-decembre">
-                  30 décembre
-                </option>
+                  const label = date.toLocaleDateString(
+                    'fr-FR',
+                    {
+                      day: 'numeric',
+                      month: 'long',
+                    }
+                  )
 
-                <option value="31-decembre">
-                  31 décembre
-                </option>
+                  return (
+                    <option
+                      key={value}
+                      value={value}
+                    >
+                      {label}
+                    </option>
+                  )
+                })}
               </select>
             </label>
 
@@ -159,28 +168,28 @@ export default function Checkout({
                   Choisir un créneau
                 </option>
 
-                <option value="10h-11h">
-                  10h00 – 11h00
+                <option value="08h-10h">
+                  8h00 – 10h00
                 </option>
 
-                <option value="11h-12h">
-                  11h00 – 12h00
+                <option value="10h-12h">
+                  10h00 – 12h00
                 </option>
 
-                <option value="12h-13h">
-                  12h00 – 13h00
+                <option value="12h-14h">
+                  12h00 – 14h00
                 </option>
 
-                <option value="15h-16h">
-                  15h00 – 16h00
+                <option value="14h-16h">
+                  14h00 – 16h00
                 </option>
 
-                <option value="16h-17h">
-                  16h00 – 17h00
+                <option value="16h-18h">
+                  16h00 – 18h00
                 </option>
 
-                <option value="17h-18h">
-                  17h00 – 18h00
+                <option value="18h-20h">
+                  18h00 – 20h00
                 </option>
               </select>
             </label>
