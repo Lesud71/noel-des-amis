@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import { AuthView } from '@neondatabase/neon-js/auth/react'
-import { neon } from './neon'
+
 import { fallbackProducts, fallbackSections } from './catalog'
 import type { Product } from './types'
 import './styles.css'
