@@ -5,7 +5,7 @@ import { AuthView } from '@neondatabase/neon-js/auth/react'
 import { fallbackProducts, fallbackSections } from './catalog'
 import type { Product } from './types'
 import './styles.css'
-
+import Checkout from './Checkout'
 function Shop() {
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -24,7 +24,7 @@ function Shop() {
   })
 
   const [cartOpen, setCartOpen] = useState(false)
-
+const [checkoutOpen, setCheckoutOpen] = useState(false)
   const sections = fallbackSections
   const products = fallbackProducts
 
