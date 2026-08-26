@@ -34,13 +34,14 @@ dialog::backdrop{background:#0005}.actions{display:flex;gap:8px;justify-content:
 .variantRow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;border-bottom:1px solid #eee;padding:7px 0}
 .heroimg{max-width:180px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #ddd}
 .notice{background:#fff8e8;border:1px solid #efddae;padding:10px 12px;border-radius:10px;margin-bottom:12px}
+.liveok{color:#39724d;font-weight:700}.livewarn{color:#9a681e;font-weight:700}.liveerr{color:#9b3434;font-weight:700}
 @media(max-width:950px){.grid{grid-template-columns:1fr}.preview{position:static}.row{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.cards{grid-template-columns:1fr}.product{grid-template-columns:24px 48px 1fr}.product .product-actions{grid-column:3}.thumb{width:48px;height:48px}.variantRow{grid-template-columns:1fr 1fr}.variantRow .qty,.variantRow .rm{grid-column:auto}}
 </style>
 </head>
 <body>
 <header>
-  <div><h1>Le Noël des Amis — Démo complète</h1><div class="status">Éditeur autonome • aucune donnée réelle n’est modifiée</div></div>
+  <div><h1>Le Noël des Amis</h1><div class="status"><span id="dataStatus">Connexion au catalogue…</span></div></div>
   <div class="topnav">
     <button id="adminMode" class="active" onclick="setMode('admin')">Admin</button>
     <button id="shopMode" onclick="setMode('shop')">Boutique plein écran</button>
@@ -49,7 +50,7 @@ dialog::backdrop{background:#0005}.actions{display:flex;gap:8px;justify-content:
 </header>
 
 <div id="adminView" class="wrap">
-<div class="notice">Cette démo enregistre tes essais uniquement dans ton navigateur. Elle sert à valider l’ergonomie et le rendu avant la reconnexion au site réel.</div>
+<div class="notice"><b>Catalogue public connecté à Neon.</b> Les produits, sections et variantes affichés côté boutique sont chargés depuis la base réelle. L’édition Admin reste encore locale dans cette version ; son écriture sécurisée sera raccordée à l’étape suivante.</div>
 <div class="grid">
 <main>
 <div class="tabs">
@@ -187,6 +188,177 @@ const seed={
 seed.published=JSON.parse(JSON.stringify(seed));
 let D=JSON.parse(localStorage.getItem('nda-demo-complete')||'null')||JSON.parse(JSON.stringify(seed));
 const prodDlg=document.getElementById('prodDlg'),secDlg=document.getElementById('secDlg');
+
+const DATA_API_BASE="https://ep-raspy-fire-afu41c5f.apirest.c-2.us-west-2.aws.neon.tech/neondb/rest/v1";
+let remoteCatalogLoaded=false;
+
+function setDataStatus(message,kind='warn'){
+  const el=document.getElementById('dataStatus');
+  if(!el)return;
+  el.textContent=message;
+  el.className=kind==='ok'?'liveok':kind==='err'?'liveerr':'livewarn';
+}
+
+async function apiGet(path,query=''){
+  const url=DATA_API_BASE+'/'+path+(query?('?'+query):'');
+  const res=await fetch(url,{
+    method:'GET',
+    headers:{'Accept':'application/json'}
+  });
+  if(!res.ok){
+    let detail='';
+    try{detail=await res.text()}catch(e){}
+    throw new Error(path+' → HTTP '+res.status+(detail?(' · '+detail.slice(0,160)):''));
+  }
+  return await res.json();
+}
+
+function normalizeRemoteProduct(p,variantsByProduct){
+  const variants=(variantsByProduct[p.id]||[]).map(v=>({
+    id:v.id,
+    label:v.label,
+    sku:v.sku||'',
+    sort_order:Number(v.sort_order||100),
+    qty:v.stock_qty,
+    stock_qty:v.stock_qty,
+    state:v.stock_state||'in_stock',
+    stock_state:v.stock_state||'in_stock',
+    price_cents:v.price_cents,
+    active:v.active!==false
+  })).sort((a,b)=>a.sort_order-b.sort_order);
+
+  return {
+    ...p,
+    id:String(p.id),
+    name_fr:p.name_fr||'',
+    name_en:p.name_en||'',
+    category:p.category||'',
+    section_id:p.section_id||null,
+    product_type:p.product_type||'food',
+    price_cents:Number(p.price_cents||0),
+    grams:p.grams==null?null:Number(p.grams),
+    sort_order:Number(p.sort_order||100),
+    stock_mode:p.stock_mode||'unlimited',
+    stock_qty:p.stock_qty==null?null:Number(p.stock_qty),
+    options:Array.isArray(p.options)?p.options:[],
+    metadata:p.metadata&&typeof p.metadata==='object'?p.metadata:{},
+    state:p.state||'published',
+    featured:!!p.featured,
+    archived:!!p.archived,
+    image_url:p.image_url||'',
+    description_fr:p.description_fr||'',
+    description_en:p.description_en||'',
+    variants
+  };
+}
+
+function mergePublicSettings(rows){
+  if(!Array.isArray(rows))return;
+  for(const row of rows){
+    const v=row?.published_value||{};
+    if(row.key==='appearance'){
+      D.appearance={
+        background:v.background||D.appearance.background,
+        accent:v.accent||D.appearance.accent,
+        text:v.text||D.appearance.text
+      };
+    }
+    if(row.key==='content'){
+      D.content={
+        ...D.content,
+        hero_title_fr:v.hero_title_fr||D.content.hero_title_fr,
+        hero_title_en:v.hero_title_en||D.content.hero_title_en,
+        hero_subtitle_fr:v.hero_subtitle_fr||D.content.hero_subtitle_fr,
+        hero_subtitle_en:v.hero_subtitle_en||D.content.hero_subtitle_en,
+        hero_image:v.hero_image||v.hero_image_url||D.content.hero_image
+      };
+    }
+    if(row.key==='advanced'){
+      D.advanced={
+        ...D.advanced,
+        seoTitle:v.seoTitle||v.seo_title||D.advanced.seoTitle,
+        seoDesc:v.seoDesc||v.seo_description||D.advanced.seoDesc,
+        cta:v.cta||v.cta_text||D.advanced.cta
+      };
+    }
+  }
+}
+
+function deriveSectionsFromProducts(products){
+  const seen=new Map();
+  for(const p of products){
+    const id=p.section_id||('cat-'+String(p.category||'Produits').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''));
+    const title=p.category||'Produits';
+    if(!seen.has(id)){
+      seen.set(id,{
+        id,
+        title_fr:title,
+        title_en:'',
+        description_fr:'',
+        description_en:'',
+        sort_order:100+seen.size*10,
+        visible:true,
+        layout:'grid',
+        image_url:''
+      });
+    }
+    if(!p.section_id)p.section_id=id;
+  }
+  return [...seen.values()];
+}
+
+async function loadRemoteCatalog(){
+  setDataStatus('Connexion au catalogue Neon…','warn');
+  try{
+    const [products,sections,variants,settings]=await Promise.all([
+      apiGet('products','select=*&order=sort_order.asc'),
+      apiGet('shop_sections','select=*&order=sort_order.asc'),
+      apiGet('product_variants','select=*&order=sort_order.asc'),
+      apiGet('public_shop_settings','select=*')
+    ]);
+
+    const variantsByProduct={};
+    for(const v of (variants||[])){
+      (variantsByProduct[v.product_id]||(variantsByProduct[v.product_id]=[])).push(v);
+    }
+
+    const remoteProducts=(products||[])
+      .filter(p=>!p.archived)
+      .map(p=>normalizeRemoteProduct(p,variantsByProduct));
+
+    let remoteSections=(sections||[]).map(s=>({
+      ...s,
+      sort_order:Number(s.sort_order||100),
+      visible:s.visible!==false,
+      image_url:s.image_url||'',
+      description_fr:s.description_fr||'',
+      description_en:s.description_en||'',
+      layout:s.layout||'grid'
+    }));
+
+    // Some legacy products pre-date section_id; create visual sections from category if needed.
+    const sectionIds=new Set(remoteSections.map(s=>s.id));
+    const missingSectionProducts=remoteProducts.filter(p=>!p.section_id || !sectionIds.has(p.section_id));
+    if(missingSectionProducts.length){
+      const derived=deriveSectionsFromProducts(missingSectionProducts);
+      const existingIds=new Set(remoteSections.map(s=>s.id));
+      for(const s of derived)if(!existingIds.has(s.id))remoteSections.push(s);
+    }
+
+    if(remoteProducts.length)D.products=remoteProducts;
+    if(remoteSections.length)D.sections=remoteSections.sort((a,b)=>a.sort_order-b.sort_order);
+    mergePublicSettings(settings);
+
+    remoteCatalogLoaded=true;
+    setDataStatus('Catalogue Neon connecté · '+D.products.length+' produits','ok');
+    hydrate();
+  }catch(err){
+    console.error('Neon Data API:',err);
+    remoteCatalogLoaded=false;
+    setDataStatus('Catalogue local de secours · connexion Neon à vérifier','err');
+    hydrate();
+  }
+}
 function persist(){localStorage.setItem('nda-demo-complete',JSON.stringify(D));mark()}
 function mark(t='Brouillon enregistré'){saveState.textContent=t;saveState.className='saved'}
 function tab(id,b){document.querySelectorAll('.tabpane').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
@@ -234,14 +406,15 @@ function renderPreview(){
 }
 let favorites=JSON.parse(localStorage.getItem('nda-favorites')||'[]');
 function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('nda-favorites',JSON.stringify(favorites));renderPreview();renderFullShop()}
-function cardHTML(p){let stock='';if(p.product_type==='merch'&&p.variants.length){let avail=p.variants.filter(v=>v.state!=='out_of_stock').map(v=>v.label);stock=avail.length?`<div class="status">Tailles : ${avail.join(', ')}</div>`:`<div class="badge">Rupture</div>`}else if(p.state==='out_of_stock')stock='<div class="badge">Rupture</div>';let on=favorites.includes(p.id);return `<div class="cardp"><button class="fav ${on?'on':''}" onclick="toggleFavorite('${p.id}')" title="Ma sélection">${on?'♥':'♡'}</button><img src="${p.image_url||''}"><b>${p.name_fr}</b><div class="price">${(p.price_cents/100).toFixed(2)} € ${p.grams?'· '+p.grams+' g':''}</div>${stock}<button class="primary tiny" style="width:100%;margin-top:9px">Ajouter au panier</button></div>`}
+function cardHTML(p){let stock='';if(p.product_type==='merch'&&p.variants.length){let avail=p.variants.filter(v=>(v.state||v.stock_state)!=='out_of_stock').map(v=>v.label);stock=avail.length?`<div class="status">Tailles : ${avail.join(', ')}</div>`:`<div class="badge">Rupture</div>`}else if(p.state==='out_of_stock')stock='<div class="badge">Rupture</div>';let on=favorites.includes(p.id);return `<div class="cardp"><button class="fav ${on?'on':''}" onclick="toggleFavorite('${p.id}')" title="Ma sélection">${on?'♥':'♡'}</button><img src="${p.image_url||''}"><b>${p.name_fr}</b><div class="price">${(p.price_cents/100).toFixed(2)} € ${p.grams?'· '+p.grams+' g':''}</div>${stock}<button class="primary tiny" style="width:100%;margin-top:9px">Ajouter au panier</button></div>`}
 function shopJump(where){if(where==='home')window.scrollTo({top:0,behavior:'smooth'});else document.querySelector('#fullShop .shopsection')?.scrollIntoView({behavior:'smooth'})}
 function showSelection(){let items=D.products.filter(p=>favorites.includes(p.id)&&!p.archived);fullShop.innerHTML=`<section class="shopsection" style="padding-top:48px"><h3>Ma sélection</h3><p>Vos produits préférés, à retrouver avant de finaliser votre panier.</p><div class="cards">${items.length?items.map(cardHTML).join(''):'<p>Aucun produit dans votre sélection pour le moment.</p>'}</div></section>`;if(document.getElementById('favCount'))favCount.textContent=favorites.length}
-function shopHTML(full){return D.sections.filter(s=>s.visible).sort((a,b)=>a.sort_order-b.sort_order).map(s=>{let items=D.products.filter(p=>!p.archived&&p.section_id===s.id&&p.state!=='hidden').sort((a,b)=>a.sort_order-b.sort_order);if(!items.length)return '';return `<section class="shopsection"><h3>${s.title_fr}</h3>${s.description_fr?`<p>${s.description_fr}</p>`:''}<div class="cards">${items.slice(0,full?999:6).map(cardHTML).join('')}</div></section>`}).join('')}
+function shopHTML(full){return D.sections.filter(s=>s.visible).sort((a,b)=>a.sort_order-b.sort_order).map(s=>{let items=D.products.filter(p=>!p.archived&&p.section_id===s.id&&(p.state==='published'||(!remoteCatalogLoaded&&p.state!=='hidden'))).sort((a,b)=>a.sort_order-b.sort_order);if(!items.length)return '';return `<section class="shopsection"><h3>${s.title_fr}</h3>${s.description_fr?`<p>${s.description_fr}</p>`:''}<div class="cards">${items.slice(0,full?999:6).map(cardHTML).join('')}</div></section>`}).join('')}
 function renderFullShop(){if(!fullShop)return;fullShop.style.setProperty('--bg',D.appearance.background);fullShop.style.setProperty('--acc',D.appearance.accent);fullShop.style.setProperty('--txt',D.appearance.text);fullShop.style.setProperty('--card','#e8dbcd');fullShop.innerHTML=`<div class="hero" style="${D.content.hero_image?`background-image:linear-gradient(#fff2,#fff2),url(${D.content.hero_image})`:''}"><h2>${D.content.hero_title_fr}</h2><p>${D.content.hero_subtitle_fr}</p><span class="cta" onclick="shopJump('boutique')" style="cursor:pointer">${D.advanced.cta||'Découvrir la boutique'}</span></div>${shopHTML(true)}`;if(document.getElementById('favCount'))favCount.textContent=favorites.length}
 function publishDemo(){D.published=JSON.parse(JSON.stringify({...D,published:null}));persist();mark('Version publiée dans la démo');alert('Publication simulée réussie. Tu peux continuer à modifier puis revenir à cette version.')}
 function restorePublished(){if(!D.published)return alert('Aucune version publiée dans la démo.');let pub=JSON.parse(JSON.stringify(D.published));pub.published=JSON.parse(JSON.stringify(D.published));D=pub;persist();hydrate();mark('Retour à la dernière version publiée')}
 function resetAll(){if(confirm('Réinitialiser entièrement la démo ?')){D=JSON.parse(JSON.stringify(seed));persist();hydrate()}}
 hydrate();
+loadRemoteCatalog();
 </script>
 </body></html>
