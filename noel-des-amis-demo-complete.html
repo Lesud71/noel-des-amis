@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Noël des Amis — Démo complète</title>
+<style>
+*{box-sizing:border-box} :root{--bg:#f5efe6;--acc:#b7654a;--txt:#2d2926}
+body{margin:0;font:15px/1.45 Arial,sans-serif;background:#f6f1ea;color:#2f2926}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e7ddd3;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1,h2,h3{font-family:Georgia,serif;margin:.2em 0 .5em} h1{font-size:22px}
+button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600}
+.primary{background:#b7654a;color:white}.ghost{background:#eee6dd;color:#3b312d}.danger{background:#f4dddd;color:#842d2d}.tiny{padding:7px 10px;font-size:12px}
+.wrap{max-width:1500px;margin:auto;padding:16px}
+.topnav{display:flex;gap:8px;flex-wrap:wrap}.topnav button.active{background:#2f2926;color:#fff}
+.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:16px}.panel{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:16px;margin-bottom:14px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.tab.active{background:#2f2926;color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:10px}
+label{display:block;font-size:12px;font-weight:700;margin:5px 0}.status{font-size:12px;color:#776b63}.saved{color:#39724d;font-weight:700}
+input,textarea,select{width:100%;padding:10px;border:1px solid #d8cdc4;border-radius:9px;background:#fff} textarea{min-height:78px;resize:vertical}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.product,.section-item{display:grid;grid-template-columns:28px 58px 1fr auto;gap:10px;align-items:center;border:1px solid #eee3da;border-radius:12px;padding:9px;margin:7px 0}
+.section-item{grid-template-columns:28px 1fr auto}.thumb{width:58px;height:58px;border-radius:9px;object-fit:cover;background:#eee}.handle{cursor:grab;font-size:20px;color:#988b82}
+.meta small{display:block;color:#786b63}.pill{display:inline-block;background:#f1e8df;border-radius:999px;padding:3px 7px;font-size:11px;margin-top:4px}
+.preview{position:sticky;top:76px}.devicebar{display:flex;gap:6px;margin-bottom:8px}.devicebar button.active{background:#2f2926;color:#fff}
+.mockwrap{display:flex;justify-content:center}.mock{width:100%;border:1px solid #dfd3c9;border-radius:16px;overflow:hidden;background:var(--bg);transition:.2s}.mock.mobile{max-width:390px}
+.hero{min-height:290px;padding:52px 28px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(120deg,var(--bg),#fff);background-size:cover;background-position:center;position:relative}
+.hero::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.12)}.hero>*{position:relative;z-index:1}.hero h2{font-size:38px;color:var(--txt);margin:0 0 7px}.cta{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:999px;background:var(--acc);color:white;width:max-content}
+.shopsection{padding:18px}.shopsection h3{font-size:24px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.mobile .cards{grid-template-columns:1fr}
+.cardp{background:#fff;border-radius:12px;padding:10px;border:1px solid #eadfd4}.cardp img{width:100%;height:120px;object-fit:cover;border-radius:9px;background:#eee}
+.cardp .price{font-weight:700;margin-top:4px}.badge{font-size:11px;color:#8b3d2d}.hidden{display:none!important}
+dialog{border:0;border-radius:16px;max-width:760px;width:94%;padding:0;box-shadow:0 20px 70px #0004}.dialogpanel{padding:18px}
+dialog::backdrop{background:#0005}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.variantRow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;border-bottom:1px solid #eee;padding:7px 0}
+.heroimg{max-width:180px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #ddd}
+.notice{background:#fff8e8;border:1px solid #efddae;padding:10px 12px;border-radius:10px;margin-bottom:12px}
+@media(max-width:950px){.grid{grid-template-columns:1fr}.preview{position:static}.row{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cards{grid-template-columns:1fr}.product{grid-template-columns:24px 48px 1fr}.product .product-actions{grid-column:3}.thumb{width:48px;height:48px}.variantRow{grid-template-columns:1fr 1fr}.variantRow .qty,.variantRow .rm{grid-column:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Le Noël des Amis — Démo complète</h1><div class="status">Éditeur autonome • aucune donnée réelle n’est modifiée</div></div>
+  <div class="topnav">
+    <button id="adminMode" class="active" onclick="setMode('admin')">Admin</button>
+    <button id="shopMode" onclick="setMode('shop')">Boutique plein écran</button>
+    <button class="ghost" onclick="resetAll()">Réinitialiser la démo</button>
+  </div>
+</header>
+
+<div id="adminView" class="wrap">
+<div class="notice">Cette démo enregistre tes essais uniquement dans ton navigateur. Elle sert à valider l’ergonomie et le rendu avant la reconnexion au site réel.</div>
+<div class="grid">
+<main>
+<div class="tabs">
+  <button class="tab active" onclick="tab('content',this)">Accueil & couleurs</button>
+  <button class="tab" onclick="tab('products',this)">Produits</button>
+  <button class="tab" onclick="tab('sections',this)">Sections</button>
+  <button class="tab" onclick="tab('advanced',this)">Avancé</button>
+</div>
+
+<section id="content" class="tabpane">
+<div class="panel">
+<h2>Textes principaux</h2>
+<div class="row"><div class="field"><label>Titre d’accueil FR</label><input id="hero_title_fr" oninput="saveContent()"></div><div class="field"><label>Titre d’accueil EN</label><input id="hero_title_en" oninput="saveContent()"></div></div>
+<div class="row"><div class="field"><label>Sous-titre FR</label><textarea id="hero_subtitle_fr" oninput="saveContent()"></textarea></div><div class="field"><label>Sous-titre EN</label><textarea id="hero_subtitle_en" oninput="saveContent()"></textarea></div></div>
+</div>
+<div class="panel">
+<div class="sectionhead"><div><h2>Photo principale de l’accueil</h2><div class="status">Photo derrière “Le Noël des Amis”.</div></div><button class="ghost tiny" onclick="removeHero()">Retirer</button></div>
+<input id="heroFile" type="file" accept="image/*" onchange="heroUpload(this.files[0])">
+<div style="margin-top:10px"><img id="heroThumb" class="heroimg hidden"></div>
+</div>
+<div class="panel">
+<h2>Couleurs</h2>
+<div class="row"><div class="field"><label>Fond</label><input type="color" id="bg" oninput="saveAppearance()"></div><div class="field"><label>Terracotta / accent</label><input type="color" id="acc" oninput="saveAppearance()"></div></div>
+<div class="field"><label>Texte</label><input type="color" id="txt" oninput="saveAppearance()"></div>
+</div>
+</section>
+
+<section id="products" class="tabpane hidden">
+<div class="panel">
+<div class="sectionhead"><div><h2>Produits</h2><div class="status">Créer, modifier, dupliquer, archiver et réordonner.</div></div><button class="primary" onclick="newProduct()">+ Nouveau produit</button></div>
+<div class="field"><label>Afficher la section</label><select id="filterSection" onchange="renderProducts()"></select></div>
+<div id="productList"></div>
+</div>
+</section>
+
+<section id="sections" class="tabpane hidden">
+<div class="panel">
+<div class="sectionhead"><div><h2>Sections</h2><div class="status">Ex. Gastronomie, Sélections, T-shirts, Goodies…</div></div><button class="primary" onclick="newSection()">+ Nouvelle section</button></div>
+<div id="sectionList"></div>
+</div>
+</section>
+
+<section id="advanced" class="tabpane hidden">
+<div class="panel"><h2>Réglages avancés</h2>
+<div class="field"><label>Titre Google / SEO</label><input id="seoTitle" oninput="saveAdvanced()"></div>
+<div class="field"><label>Description Google</label><textarea id="seoDesc" oninput="saveAdvanced()"></textarea></div>
+<div class="field"><label>Texte du bouton principal</label><input id="ctaText" oninput="saveAdvanced()"></div>
+</div>
+</section>
+
+<div class="panel">
+<div class="sectionhead"><div><b id="saveState">Brouillon local</b><div class="status">Tes essais restent sur cet appareil.</div></div>
+<div class="actions"><button class="ghost" onclick="restorePublished()">Revenir à la version publiée</button><button class="primary" onclick="publishDemo()">Publier les modifications</button></div></div>
+</div>
+</main>
+
+<aside>
+<div class="panel preview">
+<div class="sectionhead"><h2>Aperçu</h2><div class="devicebar"><button id="desktopBtn" class="active tiny" onclick="device('desktop')">Ordinateur</button><button id="mobileBtn" class="ghost tiny" onclick="device('mobile')">Mobile</button></div></div>
+<div class="mockwrap"><div id="mock" class="mock"><div id="hero" class="hero"><h2 id="ph1"></h2><p id="psub"></p><span class="cta" id="pcta"></span></div><div id="shopSections"></div></div></div>
+</div>
+</aside>
+</div>
+</div>
+
+<div id="shopView" class="hidden">
+<div id="fullShop" class="mock" style="border:0;border-radius:0;min-height:100vh"></div>
+</div>
+
+<dialog id="prodDlg"><div class="dialogpanel">
+<div class="sectionhead"><h2 id="prodDlgTitle">Produit</h2><button class="ghost" onclick="prodDlg.close()">Fermer</button></div>
+<input type="hidden" id="pid">
+<div class="row"><div class="field"><label>Nom FR</label><input id="pname"></div><div class="field"><label>Nom EN</label><input id="pnameen"></div></div>
+<div class="row"><div class="field"><label>Section</label><select id="psection"></select></div><div class="field"><label>Type</label><select id="ptype" onchange="typeToggle()"><option value="food">Alimentaire</option><option value="merch">T-shirt / textile</option><option value="goodie">Goodie / objet</option><option value="gift">Cadeau / coffret</option><option value="other">Autre</option></select></div></div>
+<div class="row"><div class="field"><label>Prix TTC (€)</label><input id="pprice" type="number" step="0.01"></div><div id="gramsWrap" class="field"><label>Grammage</label><input id="pgrams" type="number"></div></div>
+<div class="row"><div class="field"><label>Référence / SKU</label><input id="psku"></div><div class="field"><label>Suivi du stock</label><select id="pstockmode" onchange="stockToggle()"><option value="unlimited">Non suivi</option><option value="tracked">Stock suivi</option></select></div></div>
+<div id="stockQtyWrap" class="field hidden"><label>Quantité globale</label><input id="pstockqty" type="number" min="0"></div>
+<div id="genericOptionsWrap" class="field"><label>Variantes / options</label><input id="poptions" placeholder="Ex. Rouge, Bleu"></div>
+<div id="sizeVariantsWrap" class="field hidden">
+<div class="sectionhead"><div><label>Tailles & disponibilités</label><div class="status">Chaque taille peut avoir son propre stock et sa propre rupture.</div></div><button type="button" class="ghost tiny" onclick="addVariantRow()">+ Ajouter une taille</button></div>
+<div id="variantRows"></div>
+</div>
+<div class="field"><label>Description FR</label><textarea id="pdesc"></textarea></div>
+<div class="field"><label>Description EN</label><textarea id="pdescen"></textarea></div>
+<div class="row"><div class="field"><label>État global</label><select id="pstate"><option value="published">Publié</option><option value="hidden">Masqué</option><option value="out_of_stock">Rupture globale</option></select></div><div class="field"><label>Mis en avant</label><select id="pfeatured"><option value="false">Non</option><option value="true">Oui</option></select></div></div>
+<div class="field"><label>Photo</label><input id="pimage" type="file" accept="image/*"></div>
+<div class="actions" style="justify-content:space-between"><div><button id="archiveBtn" class="danger" onclick="archiveProduct()">Archiver</button> <button id="duplicateBtn" class="ghost" onclick="duplicateProduct()">Dupliquer</button></div><div><button class="ghost" onclick="prodDlg.close()">Annuler</button> <button class="primary" onclick="saveProduct()">Enregistrer</button></div></div>
+</div></dialog>
+
+<dialog id="secDlg"><div class="dialogpanel">
+<div class="sectionhead"><h2 id="secDlgTitle">Section</h2><button class="ghost" onclick="secDlg.close()">Fermer</button></div>
+<input type="hidden" id="sid">
+<div class="row"><div class="field"><label>Titre FR</label><input id="stitle"></div><div class="field"><label>Titre EN</label><input id="stitleen"></div></div>
+<div class="row"><div class="field"><label>Description FR</label><textarea id="sdesc"></textarea></div><div class="field"><label>Description EN</label><textarea id="sdescen"></textarea></div></div>
+<div class="row"><div class="field"><label>Mise en page</label><select id="slayout"><option value="grid">Grille</option><option value="featured">Mise en avant</option></select></div><div class="field"><label>Visible</label><select id="svisible"><option value="true">Oui</option><option value="false">Non</option></select></div></div>
+<div class="field"><label>Image de section</label><input id="simage" type="file" accept="image/*"></div>
+<div class="actions" style="justify-content:space-between"><div><button id="deleteSecBtn" class="danger" onclick="deleteSection()">Supprimer</button> <button id="dupSecBtn" class="ghost" onclick="duplicateSection()">Dupliquer</button></div><div><button class="ghost" onclick="secDlg.close()">Annuler</button> <button class="primary" onclick="saveSection()">Enregistrer</button></div></div>
+</div></dialog>
+
+<script>
+const baseProducts = [
+['fg125','Foie gras mi-cuit',125,2000],['fg250','Foie gras mi-cuit',250,4000],['fg500','Foie gras mi-cuit',500,8000],['fg1000','Foie gras mi-cuit',1000,16000],
+['sf125','Saumon fumé maison',125,1000],['sf250','Saumon fumé maison',250,2000],['sf500','Saumon fumé maison',500,4000],['sf1000','Saumon fumé maison',1000,8000],
+['gr125','Gravlax de saumon aux herbes',125,1000],['gr250','Gravlax de saumon aux herbes',250,1900],['gr500','Gravlax de saumon aux herbes',500,3800],
+['pb250','Pain brioché maison',250,1000],['pb500','Pain brioché maison',500,2000],['pe250','Pain d’épices maison',250,800],['pe500','Pain d’épices maison',500,1500],
+['cf150','Chutney de figues',150,500],['cp150','Chutney de poire',150,500],['bt250','Brie truffé',250,2000],['bt500','Brie truffé',500,4000],
+['ca30','Caviar Antonius',30,7500],['ca50','Caviar Antonius',50,12500],['ca100','Caviar Antonius',100,25000],['ca250','Caviar Antonius',250,50000]
+];
+function foodSection(n){if(n.includes('Saumon')||n.includes('Gravlax'))return 'saumons';if(n.includes('Foie'))return 'foie';if(n.includes('Pain'))return 'pains';if(n.includes('Chutney'))return 'chutneys';if(n.includes('Brie'))return 'fromage';if(n.includes('Caviar'))return 'caviar';return 'gastronomie'}
+const seed={
+ content:{hero_title_fr:'Le Noël des Amis',hero_title_en:'Christmas with Friends',hero_subtitle_fr:'La cuisine du Quai des Amis s’invite chez vous.',hero_subtitle_en:'Quai des Amis comes to your home.',hero_image:'',cta:'Découvrir la boutique'},
+ appearance:{background:'#f5efe6',accent:'#b7654a',text:'#2d2926'},
+ advanced:{seoTitle:'Le Noël des Amis — Quai des Amis',seoDesc:'La cuisine du Quai des Amis s’invite chez vous pour les fêtes.',cta:'Découvrir la boutique'},
+ sections:[
+  {id:'foie',title_fr:'Foie gras',title_en:'Foie gras',description_fr:'',description_en:'',sort_order:10,visible:true,layout:'grid',image_url:''},
+  {id:'saumons',title_fr:'Saumons',title_en:'Salmon',description_fr:'',description_en:'',sort_order:20,visible:true,layout:'grid',image_url:''},
+  {id:'pains',title_fr:'Pains',title_en:'Breads',description_fr:'',description_en:'',sort_order:30,visible:true,layout:'grid',image_url:''},
+  {id:'chutneys',title_fr:'Chutneys',title_en:'Chutneys',description_fr:'',description_en:'',sort_order:40,visible:true,layout:'grid',image_url:''},
+  {id:'fromage',title_fr:'Fromage',title_en:'Cheese',description_fr:'',description_en:'',sort_order:50,visible:true,layout:'grid',image_url:''},
+  {id:'caviar',title_fr:'Caviar',title_en:'Caviar',description_fr:'',description_en:'',sort_order:60,visible:true,layout:'grid',image_url:''},
+  {id:'selections',title_fr:'Nos sélections',title_en:'Our selections',description_fr:'',description_en:'',sort_order:70,visible:true,layout:'featured',image_url:''}
+ ],
+ products:baseProducts.map((x,i)=>({id:x[0],name_fr:x[1],name_en:'',section_id:foodSection(x[1]),product_type:'food',price_cents:x[3],grams:x[2],sku:'',stock_mode:'unlimited',stock_qty:null,options:[],variants:[],description_fr:'',description_en:'',state:'published',featured:false,sort_order:(i+1)*10,image_url:'',archived:false})),
+ published:null
+};
+seed.published=JSON.parse(JSON.stringify(seed));
+let D=JSON.parse(localStorage.getItem('nda-demo-complete')||'null')||JSON.parse(JSON.stringify(seed));
+const prodDlg=document.getElementById('prodDlg'),secDlg=document.getElementById('secDlg');
+function persist(){localStorage.setItem('nda-demo-complete',JSON.stringify(D));mark()}
+function mark(t='Brouillon enregistré'){saveState.textContent=t;saveState.className='saved'}
+function tab(id,b){document.querySelectorAll('.tabpane').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+function setMode(m){adminView.classList.toggle('hidden',m!=='admin');shopView.classList.toggle('hidden',m!=='shop');adminMode.classList.toggle('active',m==='admin');shopMode.classList.toggle('active',m==='shop');if(m==='shop')renderFullShop()}
+function device(d){mock.classList.toggle('mobile',d==='mobile');desktopBtn.className=d==='desktop'?'active tiny':'ghost tiny';mobileBtn.className=d==='mobile'?'active tiny':'ghost tiny'}
+function hydrate(){
+ hero_title_fr.value=D.content.hero_title_fr;hero_title_en.value=D.content.hero_title_en;hero_subtitle_fr.value=D.content.hero_subtitle_fr;hero_subtitle_en.value=D.content.hero_subtitle_en;
+ bg.value=D.appearance.background;acc.value=D.appearance.accent;txt.value=D.appearance.text;
+ seoTitle.value=D.advanced.seoTitle||'';seoDesc.value=D.advanced.seoDesc||'';ctaText.value=D.advanced.cta||'Découvrir la boutique';
+ heroThumb.src=D.content.hero_image||'';heroThumb.classList.toggle('hidden',!D.content.hero_image);
+ fillSections();renderProducts();renderSections();renderPreview()
+}
+function saveContent(){D.content.hero_title_fr=hero_title_fr.value;D.content.hero_title_en=hero_title_en.value;D.content.hero_subtitle_fr=hero_subtitle_fr.value;D.content.hero_subtitle_en=hero_subtitle_en.value;persist();renderPreview()}
+function saveAppearance(){D.appearance={background:bg.value,accent:acc.value,text:txt.value};persist();renderPreview()}
+function saveAdvanced(){D.advanced={seoTitle:seoTitle.value,seoDesc:seoDesc.value,cta:ctaText.value};persist();renderPreview()}
+function compress(file,max=1200,q=.82){return new Promise((ok,no)=>{let r=new FileReader(),img=new Image();r.onload=()=>{img.onload=()=>{let s=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};img.onerror=no;img.src=r.result};r.onerror=no;r.readAsDataURL(file)})}
+async function heroUpload(f){if(!f)return;D.content.hero_image=await compress(f,1800,.84);heroFile.value='';persist();hydrate()}
+function removeHero(){D.content.hero_image='';persist();hydrate()}
+function fillSections(){filterSection.innerHTML='<option value="all">Toutes les sections</option>'+D.sections.sort((a,b)=>a.sort_order-b.sort_order).map(s=>`<option value="${s.id}">${s.title_fr}</option>`).join('');psection.innerHTML=D.sections.map(s=>`<option value="${s.id}">${s.title_fr}</option>`).join('')}
+function productMeta(p){if(p.product_type==='merch')return `${p.variants.length} taille${p.variants.length>1?'s':''}`;return p.grams?`${p.grams} g`:p.product_type}
+function renderProducts(){let f=filterSection.value||'all';productList.innerHTML='';D.products.filter(p=>!p.archived&&(f==='all'||p.section_id===f)).sort((a,b)=>a.sort_order-b.sort_order).forEach(p=>{let e=document.createElement('div');e.className='product';e.draggable=true;e.dataset.id=p.id;e.innerHTML=`<span class="handle">⋮⋮</span><img class="thumb" src="${p.image_url||''}"><div class="meta"><b>${p.name_fr}</b><small>${productMeta(p)} · ${(p.price_cents/100).toFixed(2)} € · ${p.state}</small><span class="pill">${p.product_type}</span></div><div class="product-actions"><button class="ghost tiny" onclick="editProduct('${p.id}')">Modifier</button></div>`;e.ondragstart=ev=>ev.dataTransfer.setData('text/plain',p.id);e.ondragover=ev=>ev.preventDefault();e.ondrop=ev=>{ev.preventDefault();reorderProduct(ev.dataTransfer.getData('text/plain'),p.id)};productList.appendChild(e)})}
+function reorderProduct(a,b){if(a===b)return;let arr=D.products.filter(p=>!p.archived).sort((x,y)=>x.sort_order-y.sort_order),i=arr.findIndex(x=>x.id===a),j=arr.findIndex(x=>x.id===b);if(i<0||j<0)return;let[m]=arr.splice(i,1);arr.splice(j,0,m);arr.forEach((p,k)=>p.sort_order=(k+1)*10);persist();renderProducts();renderPreview()}
+function newProduct(){pid.value='';prodDlgTitle.textContent='Nouveau produit';pname.value='';pnameen.value='';psection.value=D.sections[0]?.id||'';ptype.value='food';pprice.value='';pgrams.value='';psku.value='';pstockmode.value='unlimited';pstockqty.value='';poptions.value='';pdesc.value='';pdescen.value='';pstate.value='published';pfeatured.value='false';pimage.value='';variantRows.innerHTML='';archiveBtn.classList.add('hidden');duplicateBtn.classList.add('hidden');typeToggle();prodDlg.showModal()}
+function editProduct(id){let p=D.products.find(x=>x.id===id);pid.value=id;prodDlgTitle.textContent='Modifier le produit';pname.value=p.name_fr;pnameen.value=p.name_en||'';psection.value=p.section_id;ptype.value=p.product_type;pprice.value=(p.price_cents/100).toFixed(2);pgrams.value=p.grams||'';psku.value=p.sku||'';pstockmode.value=p.stock_mode||'unlimited';pstockqty.value=p.stock_qty??'';poptions.value=(p.options||[]).join(', ');pdesc.value=p.description_fr||'';pdescen.value=p.description_en||'';pstate.value=p.state;pfeatured.value=String(!!p.featured);pimage.value='';renderVariantRows(p.variants||[]);archiveBtn.classList.remove('hidden');duplicateBtn.classList.remove('hidden');typeToggle();prodDlg.showModal()}
+function typeToggle(){let t=ptype.value==='merch';gramsWrap.classList.toggle('hidden',t);genericOptionsWrap.classList.toggle('hidden',t);sizeVariantsWrap.classList.toggle('hidden',!t);if(t&&!variantRows.children.length)['S','M','L','XL'].forEach(x=>addVariantRow({label:x,state:'in_stock',qty:null}));stockToggle()}
+function stockToggle(){let tracked=pstockmode.value==='tracked',textile=ptype.value==='merch';stockQtyWrap.classList.toggle('hidden',textile||!tracked);document.querySelectorAll('.variantQty').forEach(x=>x.classList.toggle('hidden',!tracked))}
+function renderVariantRows(v){variantRows.innerHTML='';(v||[]).forEach(addVariantRow)}
+function addVariantRow(v={}){let r=document.createElement('div');r.className='variantRow';r.innerHTML=`<div class="field"><label>Taille</label><input class="vlabel" value="${v.label||''}" placeholder="S, M, L…"></div><div class="field"><label>Disponibilité</label><select class="vstate"><option value="in_stock" ${v.state!=='out_of_stock'?'selected':''}>Disponible</option><option value="out_of_stock" ${v.state==='out_of_stock'?'selected':''}>Rupture</option></select></div><div class="field qty variantQty"><label>Quantité</label><input class="vqty" type="number" min="0" value="${v.qty??''}"></div><div class="field rm"><button class="danger tiny" type="button" onclick="this.closest('.variantRow').remove()">Retirer</button></div>`;variantRows.appendChild(r);stockToggle()}
+function collectVariants(){return [...variantRows.querySelectorAll('.variantRow')].map(r=>({label:r.querySelector('.vlabel').value.trim(),state:r.querySelector('.vstate').value,qty:pstockmode.value==='tracked'?Number(r.querySelector('.vqty').value||0):null})).filter(x=>x.label)}
+async function saveProduct(){let id=pid.value||('p'+Date.now()),p=D.products.find(x=>x.id===id)||{id,sort_order:(Math.max(0,...D.products.map(x=>x.sort_order))+10),image_url:'',archived:false};let textile=ptype.value==='merch',vars=textile?collectVariants():[];if(!pname.value.trim())return alert('Nom obligatoire');if(textile&&!vars.length)return alert('Ajoute au moins une taille');Object.assign(p,{name_fr:pname.value.trim(),name_en:pnameen.value.trim(),section_id:psection.value,product_type:ptype.value,price_cents:Math.round(Number(pprice.value||0)*100),grams:textile?null:(Number(pgrams.value)||null),sku:psku.value.trim(),stock_mode:pstockmode.value,stock_qty:!textile&&pstockmode.value==='tracked'?Number(pstockqty.value||0):null,options:textile?vars.map(x=>x.label):poptions.value.split(',').map(x=>x.trim()).filter(Boolean),variants:vars,description_fr:pdesc.value,description_en:pdescen.value,state:pstate.value,featured:pfeatured.value==='true'});if(pimage.files[0])p.image_url=await compress(pimage.files[0]);if(!D.products.some(x=>x.id===id))D.products.push(p);persist();prodDlg.close();fillSections();renderProducts();renderPreview()}
+function duplicateProduct(){let p=D.products.find(x=>x.id===pid.value),q=JSON.parse(JSON.stringify(p));q.id='p'+Date.now();q.name_fr=p.name_fr+' — copie';q.sort_order=p.sort_order+5;D.products.push(q);persist();prodDlg.close();renderProducts();renderPreview()}
+function archiveProduct(){let p=D.products.find(x=>x.id===pid.value);if(confirm('Archiver ce produit ?')){p.archived=true;persist();prodDlg.close();renderProducts();renderPreview()}}
+function renderSections(){sectionList.innerHTML='';D.sections.sort((a,b)=>a.sort_order-b.sort_order).forEach(s=>{let n=D.products.filter(p=>!p.archived&&p.section_id===s.id).length,e=document.createElement('div');e.className='section-item';e.draggable=true;e.innerHTML=`<span class="handle">⋮⋮</span><div><b>${s.title_fr}</b><div class="status">${n} produit${n>1?'s':''} · ${s.visible?'Visible':'Masquée'}</div></div><button class="ghost tiny" onclick="editSection('${s.id}')">Modifier</button>`;e.ondragstart=ev=>ev.dataTransfer.setData('text/plain',s.id);e.ondragover=ev=>ev.preventDefault();e.ondrop=ev=>{ev.preventDefault();reorderSection(ev.dataTransfer.getData('text/plain'),s.id)};sectionList.appendChild(e)})}
+function reorderSection(a,b){let arr=D.sections.sort((x,y)=>x.sort_order-y.sort_order),i=arr.findIndex(x=>x.id===a),j=arr.findIndex(x=>x.id===b);if(i<0||j<0)return;let[m]=arr.splice(i,1);arr.splice(j,0,m);arr.forEach((s,k)=>s.sort_order=(k+1)*10);persist();renderSections();renderPreview()}
+function newSection(){sid.value='';secDlgTitle.textContent='Nouvelle section';stitle.value='';stitleen.value='';sdesc.value='';sdescen.value='';slayout.value='grid';svisible.value='true';simage.value='';deleteSecBtn.classList.add('hidden');dupSecBtn.classList.add('hidden');secDlg.showModal()}
+function editSection(id){let s=D.sections.find(x=>x.id===id);sid.value=id;secDlgTitle.textContent='Modifier la section';stitle.value=s.title_fr;stitleen.value=s.title_en||'';sdesc.value=s.description_fr||'';sdescen.value=s.description_en||'';slayout.value=s.layout||'grid';svisible.value=String(s.visible);simage.value='';deleteSecBtn.classList.remove('hidden');dupSecBtn.classList.remove('hidden');secDlg.showModal()}
+async function saveSection(){let id=sid.value||('s'+Date.now()),s=D.sections.find(x=>x.id===id)||{id,sort_order:(Math.max(0,...D.sections.map(x=>x.sort_order))+10),image_url:''};if(!stitle.value.trim())return alert('Titre obligatoire');Object.assign(s,{title_fr:stitle.value.trim(),title_en:stitleen.value.trim(),description_fr:sdesc.value,description_en:sdescen.value,layout:slayout.value,visible:svisible.value==='true'});if(simage.files[0])s.image_url=await compress(simage.files[0]);if(!D.sections.some(x=>x.id===id))D.sections.push(s);persist();secDlg.close();fillSections();renderSections();renderPreview()}
+function duplicateSection(){let s=D.sections.find(x=>x.id===sid.value),q=JSON.parse(JSON.stringify(s));q.id='s'+Date.now();q.title_fr=s.title_fr+' — copie';q.sort_order=s.sort_order+5;D.sections.push(q);persist();secDlg.close();fillSections();renderSections();renderPreview()}
+function deleteSection(){let id=sid.value;if(D.products.some(p=>!p.archived&&p.section_id===id))return alert('Déplace ou archive d’abord les produits de cette section.');if(confirm('Supprimer cette section ?')){D.sections=D.sections.filter(x=>x.id!==id);persist();secDlg.close();fillSections();renderSections();renderPreview()}}
+function renderPreview(){
+ mock.style.setProperty('--bg',D.appearance.background);mock.style.setProperty('--acc',D.appearance.accent);mock.style.setProperty('--txt',D.appearance.text);
+ hero.style.backgroundImage=D.content.hero_image?`linear-gradient(#fff2,#fff2),url(${D.content.hero_image})`:'linear-gradient(120deg,var(--bg),#fff)';
+ ph1.textContent=D.content.hero_title_fr;psub.textContent=D.content.hero_subtitle_fr;pcta.textContent=D.advanced.cta||'Découvrir la boutique';
+ shopSections.innerHTML=shopHTML(false);renderFullShop()
+}
+function cardHTML(p){let stock='';if(p.product_type==='merch'&&p.variants.length){let avail=p.variants.filter(v=>v.state!=='out_of_stock').map(v=>v.label);stock=avail.length?`<div class="status">Tailles : ${avail.join(', ')}</div>`:`<div class="badge">Rupture</div>`}else if(p.state==='out_of_stock')stock='<div class="badge">Rupture</div>';return `<div class="cardp"><img src="${p.image_url||''}"><b>${p.name_fr}</b><div class="price">${(p.price_cents/100).toFixed(2)} € ${p.grams?'· '+p.grams+' g':''}</div>${stock}</div>`}
+function shopHTML(full){return D.sections.filter(s=>s.visible).sort((a,b)=>a.sort_order-b.sort_order).map(s=>{let items=D.products.filter(p=>!p.archived&&p.section_id===s.id&&p.state!=='hidden').sort((a,b)=>a.sort_order-b.sort_order);if(!items.length)return '';return `<section class="shopsection"><h3>${s.title_fr}</h3>${s.description_fr?`<p>${s.description_fr}</p>`:''}<div class="cards">${items.slice(0,full?999:6).map(cardHTML).join('')}</div></section>`}).join('')}
+function renderFullShop(){if(!fullShop)return;fullShop.style.setProperty('--bg',D.appearance.background);fullShop.style.setProperty('--acc',D.appearance.accent);fullShop.style.setProperty('--txt',D.appearance.text);fullShop.innerHTML=`<div class="hero" style="${D.content.hero_image?`background-image:linear-gradient(#fff2,#fff2),url(${D.content.hero_image})`:''}"><h2>${D.content.hero_title_fr}</h2><p>${D.content.hero_subtitle_fr}</p><span class="cta">${D.advanced.cta||'Découvrir la boutique'}</span></div>${shopHTML(true)}`}
+function publishDemo(){D.published=JSON.parse(JSON.stringify({...D,published:null}));persist();mark('Version publiée dans la démo');alert('Publication simulée réussie. Tu peux continuer à modifier puis revenir à cette version.')}
+function restorePublished(){if(!D.published)return alert('Aucune version publiée dans la démo.');let pub=JSON.parse(JSON.stringify(D.published));pub.published=JSON.parse(JSON.stringify(D.published));D=pub;persist();hydrate();mark('Retour à la dernière version publiée')}
+function resetAll(){if(confirm('Réinitialiser entièrement la démo ?')){D=JSON.parse(JSON.stringify(seed));persist();hydrate()}}
+hydrate();
+</script>
+</body></html>
