@@ -8,7 +8,7 @@ import App from './App'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <NeonAuthUIProvider emailOTP authClient={neon.auth}>
+    <NeonAuthUIProvider emailOTP authClient={authClient}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
