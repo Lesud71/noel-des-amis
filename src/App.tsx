@@ -6,6 +6,7 @@ import { fallbackProducts, fallbackSections } from './catalog'
 import type { Product } from './types'
 import './styles.css'
 import Checkout from './Checkout'
+
 function Shop() {
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -24,7 +25,8 @@ function Shop() {
   })
 
   const [cartOpen, setCartOpen] = useState(false)
-const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+
   const sections = fallbackSections
   const products = fallbackProducts
 
@@ -361,10 +363,7 @@ const [checkoutOpen, setCheckoutOpen] = useState(false)
                       <span>Total</span>
 
                       <strong>
-                        {(cartTotal / 100).toFixed(
-                          2
-                        )}{' '}
-                        €
+                        {(cartTotal / 100).toFixed(2)} €
                       </strong>
                     </div>
 
@@ -376,11 +375,10 @@ const [checkoutOpen, setCheckoutOpen] = useState(false)
 
                     <button
                       className="checkoutButton"
-                      onClick={() =>
-                        alert(
-                          'Étape suivante : checkout et paiement Viva.'
-                        )
-                      }
+                      onClick={() => {
+                        setCartOpen(false)
+                        setCheckoutOpen(true)
+                      }}
                     >
                       Commander
                     </button>
@@ -397,6 +395,26 @@ const [checkoutOpen, setCheckoutOpen] = useState(false)
                 </>
               )}
             </div>
+          </aside>
+        </>
+      )}
+
+      {checkoutOpen && (
+        <>
+          <div
+            className="cartBackdrop"
+            onClick={() => setCheckoutOpen(false)}
+          />
+
+          <aside className="checkoutDrawer">
+            <Checkout
+              total={cartTotal}
+              count={cartCount}
+              onBack={() => {
+                setCheckoutOpen(false)
+                setCartOpen(true)
+              }}
+            />
           </aside>
         </>
       )}
@@ -443,10 +461,7 @@ function ProductCard({
 
         <div className="productMeta">
           <span>
-            {(product.price_cents / 100).toFixed(
-              2
-            )}{' '}
-            €
+            {(product.price_cents / 100).toFixed(2)} €
           </span>
 
           {product.grams ? (
