@@ -1,0 +1,75 @@
+:root{
+  font-family: Arial, Helvetica, sans-serif;
+  color:#292421;
+  background:#f3eadf;
+  --bg:#f3eadf;
+  --card:#e8dbcd;
+  --accent:#ad634c;
+  --text:#292421;
+  --line:rgba(61,46,38,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text)}
+button,a{font:inherit}
+a{color:inherit}
+.shopHeader{
+  position:sticky;top:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:18px 6vw;background:rgba(243,234,223,.94);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px)
+}
+.brand{font-family:Georgia,serif;font-size:21px}
+.shopHeader nav{display:flex;align-items:center;gap:22px;font-size:13px}
+.shopHeader nav a{text-decoration:none}
+.linkButton{border:0;background:none;padding:0;color:inherit;cursor:pointer}
+.adminLink{opacity:.55}
+.count{font-size:10px;vertical-align:super}
+.hero{min-height:66vh;display:flex;align-items:center;padding:9vw 7vw;background:linear-gradient(125deg,#f3eadf,#eadccf)}
+.heroInner{max-width:720px}
+.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:11px;opacity:.58;margin-bottom:13px}
+.hero h1,.sectionIntro h2,.category h3,.adminShell h1,.adminPanel h2{font-family:Georgia,serif;font-weight:400}
+.hero h1{font-size:clamp(48px,8vw,94px);line-height:.95;margin:0 0 22px}
+.hero p{font-family:Georgia,serif;font-size:22px;max-width:560px}
+.cta,.add{display:inline-block;border:0;background:var(--accent);color:white;text-decoration:none;padding:12px 18px;border-radius:999px;cursor:pointer}
+.catalogue,.selection{padding:70px 6vw}
+.sectionIntro{max-width:680px;margin-bottom:42px}
+.sectionIntro h2{font-size:38px;margin:0}
+.category{margin-bottom:56px}
+.category h3{font-size:28px;margin:0 0 18px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.imagePlaceholder{height:180px;background:#ded2c5;display:flex;align-items:center;justify-content:center;color:#746960;font-size:12px}
+.imagePlaceholder img{width:100%;height:100%;object-fit:cover}
+.cardBody{padding:14px}
+.card h4{font-family:Georgia,serif;font-size:18px;font-weight:400;margin:0 0 8px}
+.productMeta{font-size:13px;margin-bottom:14px}
+.add{width:100%;font-size:12px;padding:10px}
+.fav{position:absolute;right:12px;top:12px;z-index:2;width:32px;height:32px;border-radius:50%;border:0;background:rgba(243,234,223,.9);cursor:pointer}
+.fav.on{background:var(--accent);color:white}
+.selection{border-top:1px solid var(--line)}
+.muted{opacity:.6}
+footer{padding:40px 6vw;border-top:1px solid var(--line);font-family:Georgia,serif}
+.adminShell{min-height:100vh;padding:5vw;background:#f3eadf}
+.adminTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.adminTop h1{margin:0;font-size:42px}
+.ghost{background:#e8dbcd;border:1px solid var(--line);border-radius:10px;text-decoration:none;padding:10px 14px}
+.adminGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.adminPanel{background:#eee3d7;border:1px solid var(--line);border-radius:16px;padding:22px}
+.adminPanel h2{font-size:26px;margin-top:0}
+.check{padding:9px 0;border-bottom:1px solid var(--line)}
+.next{margin-top:18px;padding:13px;background:#e4d4c5;border-radius:10px;font-size:13px}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(3,1fr)}.adminGrid{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .shopHeader{align-items:flex-start;gap:12px;flex-direction:column;padding:14px 18px}
+  .shopHeader nav{gap:12px;flex-wrap:wrap}
+  .hero{min-height:58vh;padding:80px 22px}
+  .hero h1{font-size:54px}
+  .hero p{font-size:18px}
+  .catalogue,.selection{padding:52px 18px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:10px}
+  .imagePlaceholder{height:135px}
+  .cardBody{padding:10px}
+  .card h4{font-size:16px}
+  .adminShell{padding:22px}
+}
