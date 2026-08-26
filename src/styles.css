@@ -286,3 +286,144 @@ footer{padding:40px 6vw;border-top:1px solid var(--line);font-family:Georgia,ser
     padding: 18px;
   }
 }
+/* CHECKOUT */
+
+.checkoutDrawer {
+  position: fixed;
+  z-index: 110;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(620px, 100%);
+  background: #f3eadf;
+  box-shadow: -18px 0 60px rgba(40, 30, 24, 0.18);
+  overflow-y: auto;
+}
+
+.checkoutPage {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkoutTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 28px 26px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.checkoutTop h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 34px;
+  margin: 0;
+}
+
+.checkoutForm {
+  padding: 24px 26px 32px;
+}
+
+.checkoutSection {
+  padding: 0 0 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.checkoutSection h3 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+
+.checkoutGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.checkoutForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.checkoutForm input,
+.checkoutForm textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #eee3d7;
+  color: var(--text);
+  border-radius: 9px;
+  padding: 12px;
+  outline: none;
+  font: inherit;
+}
+
+.checkoutForm input:focus,
+.checkoutForm textarea:focus {
+  border-color: var(--accent);
+}
+
+.checkoutChoice {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 12px !important;
+  padding: 14px;
+  background: #eee3d7;
+  border-radius: 10px;
+}
+
+.checkoutChoice input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.checkoutChoice span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.checkoutChoice small {
+  opacity: 0.65;
+}
+
+.checkoutSummary {
+  padding-top: 4px;
+}
+
+.checkoutSummary > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.checkoutSummary strong {
+  font-family: Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .checkoutDrawer {
+    width: 100%;
+  }
+
+  .checkoutTop {
+    padding: 22px 18px 16px;
+  }
+
+  .checkoutForm {
+    padding: 20px 18px 28px;
+  }
+
+  .checkoutGrid {
+    grid-template-columns: 1fr;
+  }
+}
