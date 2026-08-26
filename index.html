@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Le Noël des Amis — Démo complète</title>
 <style>
-*{box-sizing:border-box} :root{--bg:#f5efe6;--acc:#b7654a;--txt:#2d2926}
-body{margin:0;font:15px/1.45 Arial,sans-serif;background:#f6f1ea;color:#2f2926}
+*{box-sizing:border-box} :root{--bg:#f3eadf;--acc:#ad634c;--txt:#292421;--card:#e8dbcd}
+body{margin:0;font:15px/1.5 Arial,sans-serif;background:#f3eadf;color:#292421}
 header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e7ddd3;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 h1,h2,h3{font-family:Georgia,serif;margin:.2em 0 .5em} h1{font-size:22px}
 button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600}
@@ -27,8 +27,8 @@ input,textarea,select{width:100%;padding:10px;border:1px solid #d8cdc4;border-ra
 .hero{min-height:290px;padding:52px 28px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(120deg,var(--bg),#fff);background-size:cover;background-position:center;position:relative}
 .hero::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.12)}.hero>*{position:relative;z-index:1}.hero h2{font-size:38px;color:var(--txt);margin:0 0 7px}.cta{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:999px;background:var(--acc);color:white;width:max-content}
 .shopsection{padding:18px}.shopsection h3{font-size:24px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.mobile .cards{grid-template-columns:1fr}
-.cardp{background:#fff;border-radius:12px;padding:10px;border:1px solid #eadfd4}.cardp img{width:100%;height:120px;object-fit:cover;border-radius:9px;background:#eee}
-.cardp .price{font-weight:700;margin-top:4px}.badge{font-size:11px;color:#8b3d2d}.hidden{display:none!important}
+.cardp{position:relative;background:var(--card);border-radius:10px;padding:9px;border:1px solid rgba(73,55,45,.08);transition:transform .18s ease,box-shadow .18s ease}.cardp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(67,48,37,.08)}.cardp img{width:100%;height:102px;object-fit:cover;border-radius:7px;background:#ded2c5}
+.cardp .price{font-weight:700;margin-top:4px}.fav{position:absolute;right:15px;top:15px;width:30px;height:30px;border-radius:50%;background:rgba(247,240,232,.9);padding:0;font-size:17px;color:#40352f}.fav.on{background:var(--acc);color:white}.badge{font-size:11px;color:#8b3d2d}.hidden{display:none!important}
 dialog{border:0;border-radius:16px;max-width:760px;width:94%;padding:0;box-shadow:0 20px 70px #0004}.dialogpanel{padding:18px}
 dialog::backdrop{background:#0005}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .variantRow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;border-bottom:1px solid #eee;padding:7px 0}
@@ -116,6 +116,15 @@ dialog::backdrop{background:#0005}.actions{display:flex;gap:8px;justify-content:
 </div>
 
 <div id="shopView" class="hidden">
+<header style="position:sticky;top:0;background:rgba(243,234,223,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(65,49,40,.1)">
+  <div style="font-family:Georgia,serif;font-size:19px">Le Noël des Amis</div>
+  <nav style="display:flex;gap:22px;align-items:center;font-size:13px">
+    <a href="#" onclick="event.preventDefault();shopJump('home')" style="color:inherit;text-decoration:none">Accueil</a>
+    <a href="#" onclick="event.preventDefault();shopJump('boutique')" style="color:inherit;text-decoration:none">Boutique</a>
+    <a href="#" onclick="event.preventDefault();showSelection()" style="color:inherit;text-decoration:none">Ma sélection <span id="favCount">0</span></a>
+    <a href="#" onclick="event.preventDefault();alert('Le panier complet sera raccordé à l’étape checkout.')" style="color:inherit;text-decoration:none">Panier</a>
+  </nav>
+</header>
 <div id="fullShop" class="mock" style="border:0;border-radius:0;min-height:100vh"></div>
 </div>
 
@@ -161,7 +170,7 @@ const baseProducts = [
 function foodSection(n){if(n.includes('Saumon')||n.includes('Gravlax'))return 'saumons';if(n.includes('Foie'))return 'foie';if(n.includes('Pain'))return 'pains';if(n.includes('Chutney'))return 'chutneys';if(n.includes('Brie'))return 'fromage';if(n.includes('Caviar'))return 'caviar';return 'gastronomie'}
 const seed={
  content:{hero_title_fr:'Le Noël des Amis',hero_title_en:'Christmas with Friends',hero_subtitle_fr:'La cuisine du Quai des Amis s’invite chez vous.',hero_subtitle_en:'Quai des Amis comes to your home.',hero_image:'',cta:'Découvrir la boutique'},
- appearance:{background:'#f5efe6',accent:'#b7654a',text:'#2d2926'},
+ appearance:{background:'#f3eadf',accent:'#ad634c',text:'#292421'},
  advanced:{seoTitle:'Le Noël des Amis — Quai des Amis',seoDesc:'La cuisine du Quai des Amis s’invite chez vous pour les fêtes.',cta:'Découvrir la boutique'},
  sections:[
   {id:'foie',title_fr:'Foie gras',title_en:'Foie gras',description_fr:'',description_en:'',sort_order:10,visible:true,layout:'grid',image_url:''},
@@ -223,9 +232,13 @@ function renderPreview(){
  ph1.textContent=D.content.hero_title_fr;psub.textContent=D.content.hero_subtitle_fr;pcta.textContent=D.advanced.cta||'Découvrir la boutique';
  shopSections.innerHTML=shopHTML(false);renderFullShop()
 }
-function cardHTML(p){let stock='';if(p.product_type==='merch'&&p.variants.length){let avail=p.variants.filter(v=>v.state!=='out_of_stock').map(v=>v.label);stock=avail.length?`<div class="status">Tailles : ${avail.join(', ')}</div>`:`<div class="badge">Rupture</div>`}else if(p.state==='out_of_stock')stock='<div class="badge">Rupture</div>';return `<div class="cardp"><img src="${p.image_url||''}"><b>${p.name_fr}</b><div class="price">${(p.price_cents/100).toFixed(2)} € ${p.grams?'· '+p.grams+' g':''}</div>${stock}</div>`}
+let favorites=JSON.parse(localStorage.getItem('nda-favorites')||'[]');
+function toggleFavorite(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];localStorage.setItem('nda-favorites',JSON.stringify(favorites));renderPreview();renderFullShop()}
+function cardHTML(p){let stock='';if(p.product_type==='merch'&&p.variants.length){let avail=p.variants.filter(v=>v.state!=='out_of_stock').map(v=>v.label);stock=avail.length?`<div class="status">Tailles : ${avail.join(', ')}</div>`:`<div class="badge">Rupture</div>`}else if(p.state==='out_of_stock')stock='<div class="badge">Rupture</div>';let on=favorites.includes(p.id);return `<div class="cardp"><button class="fav ${on?'on':''}" onclick="toggleFavorite('${p.id}')" title="Ma sélection">${on?'♥':'♡'}</button><img src="${p.image_url||''}"><b>${p.name_fr}</b><div class="price">${(p.price_cents/100).toFixed(2)} € ${p.grams?'· '+p.grams+' g':''}</div>${stock}<button class="primary tiny" style="width:100%;margin-top:9px">Ajouter au panier</button></div>`}
+function shopJump(where){if(where==='home')window.scrollTo({top:0,behavior:'smooth'});else document.querySelector('#fullShop .shopsection')?.scrollIntoView({behavior:'smooth'})}
+function showSelection(){let items=D.products.filter(p=>favorites.includes(p.id)&&!p.archived);fullShop.innerHTML=`<section class="shopsection" style="padding-top:48px"><h3>Ma sélection</h3><p>Vos produits préférés, à retrouver avant de finaliser votre panier.</p><div class="cards">${items.length?items.map(cardHTML).join(''):'<p>Aucun produit dans votre sélection pour le moment.</p>'}</div></section>`;if(document.getElementById('favCount'))favCount.textContent=favorites.length}
 function shopHTML(full){return D.sections.filter(s=>s.visible).sort((a,b)=>a.sort_order-b.sort_order).map(s=>{let items=D.products.filter(p=>!p.archived&&p.section_id===s.id&&p.state!=='hidden').sort((a,b)=>a.sort_order-b.sort_order);if(!items.length)return '';return `<section class="shopsection"><h3>${s.title_fr}</h3>${s.description_fr?`<p>${s.description_fr}</p>`:''}<div class="cards">${items.slice(0,full?999:6).map(cardHTML).join('')}</div></section>`}).join('')}
-function renderFullShop(){if(!fullShop)return;fullShop.style.setProperty('--bg',D.appearance.background);fullShop.style.setProperty('--acc',D.appearance.accent);fullShop.style.setProperty('--txt',D.appearance.text);fullShop.innerHTML=`<div class="hero" style="${D.content.hero_image?`background-image:linear-gradient(#fff2,#fff2),url(${D.content.hero_image})`:''}"><h2>${D.content.hero_title_fr}</h2><p>${D.content.hero_subtitle_fr}</p><span class="cta">${D.advanced.cta||'Découvrir la boutique'}</span></div>${shopHTML(true)}`}
+function renderFullShop(){if(!fullShop)return;fullShop.style.setProperty('--bg',D.appearance.background);fullShop.style.setProperty('--acc',D.appearance.accent);fullShop.style.setProperty('--txt',D.appearance.text);fullShop.style.setProperty('--card','#e8dbcd');fullShop.innerHTML=`<div class="hero" style="${D.content.hero_image?`background-image:linear-gradient(#fff2,#fff2),url(${D.content.hero_image})`:''}"><h2>${D.content.hero_title_fr}</h2><p>${D.content.hero_subtitle_fr}</p><span class="cta" onclick="shopJump('boutique')" style="cursor:pointer">${D.advanced.cta||'Découvrir la boutique'}</span></div>${shopHTML(true)}`;if(document.getElementById('favCount'))favCount.textContent=favorites.length}
 function publishDemo(){D.published=JSON.parse(JSON.stringify({...D,published:null}));persist();mark('Version publiée dans la démo');alert('Publication simulée réussie. Tu peux continuer à modifier puis revenir à cette version.')}
 function restorePublished(){if(!D.published)return alert('Aucune version publiée dans la démo.');let pub=JSON.parse(JSON.stringify(D.published));pub.published=JSON.parse(JSON.stringify(D.published));D=pub;persist();hydrate();mark('Retour à la dernière version publiée')}
 function resetAll(){if(confirm('Réinitialiser entièrement la démo ?')){D=JSON.parse(JSON.stringify(seed));persist();hydrate()}}
