@@ -8,6 +8,7 @@ import './styles.css'
 
 import Checkout from './Checkout'
 import PaymentResult from './PaymentResult'
+import AdminDashboard from './AdminDashboard'
 import { authClient } from './neon'
 
 import {
@@ -736,42 +737,7 @@ function Admin() {
         </div>
       </div>
 
-      <div className="adminGrid">
-        <section className="adminPanel">
-          <h2>
-            Session active
-          </h2>
-
-          <div className="check">
-            ✓ Connexion Neon Auth reconnue
-          </div>
-
-          <div className="check">
-            ✓ Session Admin active
-          </div>
-
-          <div className="check">
-            ✓ Boutique publique séparée
-          </div>
-        </section>
-
-        <section className="adminPanel">
-          <h2>
-            Gestion de la boutique
-          </h2>
-
-          <p>
-            Votre espace privé est maintenant
-            accessible.
-          </p>
-
-          <div className="next">
-            Prochaine étape : brancher la gestion
-            des produits sur Neon et créer notre
-            produit test Viva à 0,30 €.
-          </div>
-        </section>
-      </div>
+      <AdminDashboard />
     </div>
   )
 }
