@@ -8,7 +8,6 @@ import './styles.css'
 
 import Checkout from './Checkout'
 import PaymentResult from './PaymentResult'
-import AdminDashboard from './AdminDashboard'
 import { authClient } from './neon'
 
 import {
@@ -46,16 +45,16 @@ function Shop() {
   const products = fallbackProducts
 
   const cartCount = Object.values(cart).reduce(
-    (total, quantity) => total + quantity,
+    (a, b) => a + b,
     0
   )
 
-  const selection = products.filter((product) =>
-    favorites.includes(product.id)
+  const selection = products.filter((p) =>
+    favorites.includes(p.id)
   )
 
   const cartItems = products
-    .filter((product) => (cart[product.id] || 0) > 0)
+    .filter((p) => (cart[p.id] || 0) > 0)
     .map((product) => ({
       product,
       quantity: cart[product.id] || 0,
@@ -79,7 +78,7 @@ function Shop() {
 
   function toggleFavorite(id: string) {
     const next = favorites.includes(id)
-      ? favorites.filter((item) => item !== id)
+      ? favorites.filter((x) => x !== id)
       : [...favorites, id]
 
     setFavorites(next)
@@ -220,8 +219,8 @@ function Shop() {
 
           {sections.map((section) => {
             const items = products.filter(
-              (product) =>
-                product.section_id === section.id
+              (p) =>
+                p.section_id === section.id
             )
 
             if (!items.length) {
@@ -238,18 +237,18 @@ function Shop() {
                 </h3>
 
                 <div className="cards">
-                  {items.map((product) => (
+                  {items.map((p) => (
                     <ProductCard
-                      key={product.id}
-                      product={product}
+                      key={p.id}
+                      product={p}
                       favorite={favorites.includes(
-                        product.id
+                        p.id
                       )}
                       onFavorite={() =>
-                        toggleFavorite(product.id)
+                        toggleFavorite(p.id)
                       }
                       onAdd={() =>
-                        addToCart(product.id)
+                        addToCart(p.id)
                       }
                     />
                   ))}
@@ -275,16 +274,16 @@ function Shop() {
 
           {selection.length ? (
             <div className="cards">
-              {selection.map((product) => (
+              {selection.map((p) => (
                 <ProductCard
-                  key={product.id}
-                  product={product}
+                  key={p.id}
+                  product={p}
                   favorite
                   onFavorite={() =>
-                    toggleFavorite(product.id)
+                    toggleFavorite(p.id)
                   }
                   onAdd={() =>
-                    addToCart(product.id)
+                    addToCart(p.id)
                   }
                 />
               ))}
@@ -390,9 +389,7 @@ function Shop() {
                                 src={
                                   product.image_url
                                 }
-                                alt={
-                                  product.name_fr
-                                }
+                                alt=""
                               />
                             ) : (
                               <span>
@@ -573,7 +570,7 @@ function ProductCard({
         {product.image_url ? (
           <img
             src={product.image_url}
-            alt={product.name_fr}
+            alt=""
           />
         ) : (
           <span>
@@ -681,8 +678,8 @@ function Admin() {
             </h2>
 
             <p>
-              Les clients de la boutique
-              n’ont pas besoin de compte.
+              Les clients de la boutique n’ont
+              pas besoin de compte.
             </p>
 
             <div className="check">
@@ -739,7 +736,42 @@ function Admin() {
         </div>
       </div>
 
-      <AdminDashboard />
+      <div className="adminGrid">
+        <section className="adminPanel">
+          <h2>
+            Session active
+          </h2>
+
+          <div className="check">
+            ✓ Connexion Neon Auth reconnue
+          </div>
+
+          <div className="check">
+            ✓ Session Admin active
+          </div>
+
+          <div className="check">
+            ✓ Boutique publique séparée
+          </div>
+        </section>
+
+        <section className="adminPanel">
+          <h2>
+            Gestion de la boutique
+          </h2>
+
+          <p>
+            Votre espace privé est maintenant
+            accessible.
+          </p>
+
+          <div className="next">
+            Prochaine étape : brancher la gestion
+            des produits sur Neon et créer notre
+            produit test Viva à 0,30 €.
+          </div>
+        </section>
+      </div>
     </div>
   )
 }
