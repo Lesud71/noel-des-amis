@@ -6,6 +6,7 @@ import { fallbackProducts, fallbackSections } from './catalog'
 import type { Product } from './types'
 import './styles.css'
 import Checkout from './Checkout'
+import PaymentResult from './PaymentResult'
 
 import {
   CGV,
@@ -66,6 +67,7 @@ function Shop() {
 
   function saveCart(next: Record<string, number>) {
     setCart(next)
+
     localStorage.setItem(
       'nda-cart',
       JSON.stringify(next)
@@ -720,6 +722,20 @@ export default function App() {
       <Route
         path="/contact"
         element={<Contact />}
+      />
+
+      <Route
+        path="/paiement-reussi"
+        element={
+          <PaymentResult status="success" />
+        }
+      />
+
+      <Route
+        path="/paiement-echec"
+        element={
+          <PaymentResult status="failure" />
+        }
       />
     </Routes>
   )
