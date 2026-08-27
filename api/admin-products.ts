@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless'
+import { randomUUID } from 'node:crypto'
 
 const sql = neon(process.env.DATABASE_URL!)
 
@@ -13,42 +14,40 @@ export default async function handler(
   }
 
   try {
-    // =========================
-    // GET — Liste des produits
-    // =========================
     if (req.method === 'GET') {
       const products = await sql`
         SELECT
           id,
           section_id,
           name_fr,
+          category,
           price_cents,
           grams,
           image_url,
+          stock_mode,
           stock_qty,
-          is_published,
-          is_archived,
+          state,
+          archived,
           sort_order
         FROM products
-        WHERE is_archived = false
+        WHERE archived = false
         ORDER BY sort_order ASC, name_fr ASC
       `
 
       return res.status(200).json(products)
     }
 
-    // =========================
-    // POST — Nouveau produit
-    // =========================
     if (req.method === 'POST') {
       const {
         section_id,
         name_fr,
+        category,
         price_cents,
         grams,
         image_url,
+        stock_mode,
         stock_qty,
-        is_published,
+        state,
       } = req.body ?? {}
 
       if (
@@ -63,29 +62,33 @@ export default async function handler(
 
       const price = Number(price_cents)
 
-      if (
-        !Number.isInteger(price) ||
-        price < 0
-      ) {
+      if (!Number.isInteger(price) || price < 0) {
         return res.status(400).json({
           error: 'Prix invalide',
         })
       }
 
+      const id = randomUUID()
+
       const created = await sql`
         INSERT INTO products (
+          id,
           section_id,
           name_fr,
+          category,
           price_cents,
           grams,
           image_url,
+          stock_mode,
           stock_qty,
-          is_published,
-          is_archived
+          state,
+          archived
         )
         VALUES (
+          ${id},
           ${section_id || null},
           ${String(name_fr).trim()},
+          ${category || 'Divers'},
           ${price},
           ${
             grams === '' ||
@@ -95,6 +98,7 @@ export default async function handler(
               : Number(grams)
           },
           ${image_url || null},
+          ${stock_mode || 'unlimited'},
           ${
             stock_qty === '' ||
             stock_qty === undefined ||
@@ -102,7 +106,7 @@ export default async function handler(
               ? null
               : Number(stock_qty)
           },
-          ${Boolean(is_published)},
+          ${state || 'published'},
           false
         )
         RETURNING *
@@ -111,19 +115,18 @@ export default async function handler(
       return res.status(201).json(created[0])
     }
 
-    // =========================
-    // PUT — Modifier un produit
-    // =========================
     if (req.method === 'PUT') {
       const {
         id,
         section_id,
         name_fr,
+        category,
         price_cents,
         grams,
         image_url,
+        stock_mode,
         stock_qty,
-        is_published,
+        state,
       } = req.body ?? {}
 
       if (!id) {
@@ -144,10 +147,7 @@ export default async function handler(
 
       const price = Number(price_cents)
 
-      if (
-        !Number.isInteger(price) ||
-        price < 0
-      ) {
+      if (!Number.isInteger(price) || price < 0) {
         return res.status(400).json({
           error: 'Prix invalide',
         })
@@ -158,6 +158,7 @@ export default async function handler(
         SET
           section_id = ${section_id || null},
           name_fr = ${String(name_fr).trim()},
+          category = ${category || 'Divers'},
           price_cents = ${price},
           grams = ${
             grams === '' ||
@@ -167,6 +168,7 @@ export default async function handler(
               : Number(grams)
           },
           image_url = ${image_url || null},
+          stock_mode = ${stock_mode || 'unlimited'},
           stock_qty = ${
             stock_qty === '' ||
             stock_qty === undefined ||
@@ -174,7 +176,8 @@ export default async function handler(
               ? null
               : Number(stock_qty)
           },
-          is_published = ${Boolean(is_published)}
+          state = ${state || 'published'},
+          updated_at = now()
         WHERE id = ${id}
         RETURNING *
       `
@@ -188,9 +191,6 @@ export default async function handler(
       return res.status(200).json(updated[0])
     }
 
-    // =========================
-    // DELETE — Archiver
-    // =========================
     if (req.method === 'DELETE') {
       const id =
         req.body?.id ??
@@ -205,8 +205,9 @@ export default async function handler(
       const archived = await sql`
         UPDATE products
         SET
-          is_archived = true,
-          is_published = false
+          archived = true,
+          state = 'draft',
+          updated_at = now()
         WHERE id = ${id}
         RETURNING id
       `
