@@ -7,6 +7,7 @@ import type { Product } from './types'
 import './styles.css'
 import Checkout from './Checkout'
 import PaymentResult from './PaymentResult'
+import { authClient } from './neon'
 
 import {
   CGV,
@@ -216,9 +217,7 @@ function Shop() {
 
           {sections.map(section => {
             const items = products.filter(
-              p =>
-                p.section_id ===
-                section.id
+              p => p.section_id === section.id
             )
 
             if (!items.length) {
@@ -243,9 +242,7 @@ function Shop() {
                         p.id
                       )}
                       onFavorite={() =>
-                        toggleFavorite(
-                          p.id
-                        )
+                        toggleFavorite(p.id)
                       }
                       onAdd={() =>
                         addToCart(p.id)
@@ -398,9 +395,7 @@ function Shop() {
 
                           <div className="cartItemInfo">
                             <h3>
-                              {
-                                product.name_fr
-                              }
+                              {product.name_fr}
                             </h3>
 
                             <div className="cartItemMeta">
@@ -490,9 +485,7 @@ function Shop() {
                       className="checkoutButton"
                       onClick={() => {
                         setCartOpen(false)
-                        setCheckoutOpen(
-                          true
-                        )
+                        setCheckoutOpen(true)
                       }}
                     >
                       Commander
@@ -609,6 +602,91 @@ function ProductCard({
 }
 
 function Admin() {
+  const {
+    data: session,
+    isPending,
+  } = authClient.useSession()
+
+  async function logout() {
+    await authClient.signOut()
+    window.location.href = '/'
+  }
+
+  if (isPending) {
+    return (
+      <div className="adminShell">
+        <div className="adminPanel">
+          <p>
+            Vérification de la session…
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="adminShell">
+        <div className="adminTop">
+          <div>
+            <div className="eyebrow">
+              Espace privé
+            </div>
+
+            <h1>
+              Administration
+            </h1>
+          </div>
+
+          <Link
+            to="/"
+            className="ghost"
+          >
+            Retour à la boutique
+          </Link>
+        </div>
+
+        <div className="adminGrid">
+          <section className="adminPanel">
+            <h2>
+              Connexion
+            </h2>
+
+            <p className="muted">
+              Cet espace est réservé aux
+              comptes internes du Noël des Amis.
+            </p>
+
+            <AuthView pathname="sign-in" />
+          </section>
+
+          <section className="adminPanel">
+            <h2>
+              Accès réservé
+            </h2>
+
+            <p>
+              Les clients de la boutique n’ont
+              pas besoin de compte.
+            </p>
+
+            <div className="check">
+              ✓ Commande client sans inscription
+            </div>
+
+            <div className="check">
+              ✓ Accès interne uniquement
+            </div>
+
+            <div className="check">
+              ✓ Comptes Admin / Chef
+            </div>
+          </section>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="adminShell">
       <div className="adminTop">
@@ -620,65 +698,65 @@ function Admin() {
           <h1>
             Le Noël des Amis
           </h1>
+
+          <p className="muted">
+            Connecté : {session.user.email}
+          </p>
         </div>
 
-        <Link
-          to="/"
-          className="ghost"
-        >
-          Voir la boutique
-        </Link>
+        <div>
+          <Link
+            to="/"
+            className="ghost"
+          >
+            Voir la boutique
+          </Link>
+
+          {' '}
+
+          <button
+            type="button"
+            className="ghost"
+            onClick={logout}
+          >
+            Se déconnecter
+          </button>
+        </div>
       </div>
 
       <div className="adminGrid">
         <section className="adminPanel">
           <h2>
-            Connexion Admin
+            Session active
           </h2>
 
-          <p className="muted">
-            La connexion est gérée par
-            Neon Auth. Les règles RLS de
-            la base restent l’autorité
-            finale pour toute modification.
-          </p>
+          <div className="check">
+            ✓ Connexion Neon Auth reconnue
+          </div>
 
-          <AuthView pathname="sign-in" />
+          <div className="check">
+            ✓ Session Admin active
+          </div>
+
+          <div className="check">
+            ✓ Boutique publique séparée
+          </div>
         </section>
 
         <section className="adminPanel">
           <h2>
-            V4 technique
+            Gestion de la boutique
           </h2>
 
           <p>
-            Cette V4 sépare enfin le site
-            public de l’Admin et prépare
-            les écritures persistantes
-            dans Neon.
+            Votre espace privé est maintenant
+            accessible.
           </p>
 
-          <div className="check">
-            ✓ Neon Auth branchable
-          </div>
-
-          <div className="check">
-            ✓ Admin isolé sur /admin
-          </div>
-
-          <div className="check">
-            ✓ Design boutique conservé
-          </div>
-
-          <div className="check">
-            ✓ Structure prête pour produits,
-            sections, tailles et stocks
-          </div>
-
           <div className="next">
-            Prochaine sous-étape :
-            brancher le catalogue et les
-            modifications Admin sur Neon.
+            Prochaine étape : brancher la gestion
+            des produits sur Neon et créer notre
+            produit test Viva à 0,30 €.
           </div>
         </section>
       </div>
