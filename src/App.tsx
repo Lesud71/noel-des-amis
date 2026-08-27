@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import { AuthView } from '@neondatabase/neon-js/auth/react'
 
-import { fallbackProducts, fallbackSections } from './catalog'
+import { fallbackSections } from './catalog'
 import type { Product } from './types'
 import './styles.css'
 
@@ -39,11 +39,45 @@ function Shop() {
     }
   })
 
+  const [products, setProducts] = useState<Product[]>([])
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState('')
+
   const [cartOpen, setCartOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
 
   const sections = fallbackSections
-  const products = fallbackProducts
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setProductsLoading(true)
+        setProductsError('')
+
+        const response = await fetch('/api/products')
+
+        if (!response.ok) {
+          throw new Error(
+            'Impossible de charger les produits.'
+          )
+        }
+
+        const data = await response.json()
+
+        setProducts(data)
+      } catch (error) {
+        console.error(error)
+
+        setProductsError(
+          'Impossible de charger la boutique.'
+        )
+      } finally {
+        setProductsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const cartCount = Object.values(cart).reduce(
     (a, b) => a + b,
@@ -218,45 +252,91 @@ function Shop() {
             </h2>
           </div>
 
-          {sections.map((section) => {
-            const items = products.filter(
-              (p) =>
-                p.section_id === section.id
-            )
+          {productsLoading && (
+            <p className="muted">
+              Chargement de la boutique…
+            </p>
+          )}
 
-            if (!items.length) {
-              return null
-            }
+          {productsError && (
+            <p className="muted">
+              {productsError}
+            </p>
+          )}
 
-            return (
-              <div
-                className="category"
-                key={section.id}
-              >
+          {!productsLoading &&
+            !productsError &&
+            sections.map((section) => {
+              const items = products.filter(
+                (p) =>
+                  p.section_id === section.id
+              )
+
+              if (!items.length) {
+                return null
+              }
+
+              return (
+                <div
+                  className="category"
+                  key={section.id}
+                >
+                  <h3>
+                    {section.title_fr}
+                  </h3>
+
+                  <div className="cards">
+                    {items.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        favorite={favorites.includes(
+                          p.id
+                        )}
+                        onFavorite={() =>
+                          toggleFavorite(p.id)
+                        }
+                        onAdd={() =>
+                          addToCart(p.id)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+
+          {!productsLoading &&
+            !productsError &&
+            products
+              .filter((p) => !p.section_id)
+              .length > 0 && (
+              <div className="category">
                 <h3>
-                  {section.title_fr}
+                  Nos produits
                 </h3>
 
                 <div className="cards">
-                  {items.map((p) => (
-                    <ProductCard
-                      key={p.id}
-                      product={p}
-                      favorite={favorites.includes(
-                        p.id
-                      )}
-                      onFavorite={() =>
-                        toggleFavorite(p.id)
-                      }
-                      onAdd={() =>
-                        addToCart(p.id)
-                      }
-                    />
-                  ))}
+                  {products
+                    .filter((p) => !p.section_id)
+                    .map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        favorite={favorites.includes(
+                          p.id
+                        )}
+                        onFavorite={() =>
+                          toggleFavorite(p.id)
+                        }
+                        onAdd={() =>
+                          addToCart(p.id)
+                        }
+                      />
+                    ))}
                 </div>
               </div>
-            )
-          })}
+            )}
         </section>
 
         <section
@@ -679,8 +759,8 @@ function Admin() {
             </h2>
 
             <p>
-              Les clients de la boutique n’ont
-              pas besoin de compte.
+              Les clients de la boutique
+              n’ont pas besoin de compte.
             </p>
 
             <div className="check">
