@@ -1,101 +1,212 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 type PaymentResultProps = {
   status: 'success' | 'failure'
 }
 
+type VerificationState =
+  | 'checking'
+  | 'verified'
+  | 'rejected'
+  | 'error'
+
 export default function PaymentResult({
   status,
 }: PaymentResultProps) {
-  const [params] = useSearchParams()
+  const location = useLocation()
 
-  const transactionId = params.get('t')
-  const orderCode = params.get('s')
-  const eventId = params.get('eventId')
-  const cancelled = params.get('cancel')
+  const [verification, setVerification] =
+    useState<VerificationState>(
+      status === 'success'
+        ? 'checking'
+        : 'rejected'
+    )
 
-  const success = status === 'success'
+  const [message, setMessage] =
+    useState('')
 
-  return (
-    <div className="adminShell">
-      <div className="adminPanel legalPage">
+  useEffect(() => {
+    if (status !== 'success') {
+      return
+    }
+
+    const params = new URLSearchParams(
+      location.search
+    )
+
+    const transactionId =
+      params.get('t')
+
+    const orderCode =
+      params.get('s')
+
+    if (!transactionId || !orderCode) {
+      setVerification('rejected')
+      setMessage(
+        'Les informations de paiement Viva sont manquantes.'
+      )
+      return
+    }
+
+    async function verifyPayment() {
+      try {
+        const response = await fetch(
+          `/api/verify-payment?t=${encodeURIComponent(
+            transactionId!
+          )}&s=${encodeURIComponent(
+            orderCode!
+          )}`
+        )
+
+        const data =
+          await response.json()
+
+        if (
+          response.ok &&
+          data.verified === true
+        ) {
+          setVerification('verified')
+
+          // Le panier n'est vidé qu'après
+          // confirmation serveur de Viva.
+          localStorage.removeItem(
+            'nda-cart'
+          )
+
+          return
+        }
+
+        setVerification('rejected')
+
+        setMessage(
+          data.error ||
+            'Le paiement n’a pas pu être confirmé.'
+        )
+      } catch (error) {
+        console.error(
+          'Payment verification error:',
+          error
+        )
+
+        setVerification('error')
+
+        setMessage(
+          'Impossible de vérifier le paiement pour le moment.'
+        )
+      }
+    }
+
+    verifyPayment()
+  }, [status, location.search])
+
+  if (status === 'failure') {
+    return (
+      <div className="legalPage">
         <div className="eyebrow">
-          Le Noël des Amis
+          LE NOËL DES AMIS
+        </div>
+
+        <h1>Paiement non finalisé</h1>
+
+        <p>
+          Votre paiement n’a pas été
+          confirmé.
+        </p>
+
+        <p>
+          Aucun paiement validé ne sera
+          considéré comme reçu tant que
+          Viva ne l’aura pas confirmé.
+        </p>
+
+        <Link to="/" className="ghost">
+          Retour à la boutique
+        </Link>
+      </div>
+    )
+  }
+
+  if (verification === 'checking') {
+    return (
+      <div className="legalPage">
+        <div className="eyebrow">
+          LE NOËL DES AMIS
         </div>
 
         <h1>
-          {success
-            ? 'Merci pour votre commande'
-            : 'Paiement non finalisé'}
+          Vérification du paiement…
         </h1>
 
-        {success ? (
-          <>
-            <p>
-              Votre paiement a été transmis à Viva.
-            </p>
+        <p>
+          Nous vérifions directement
+          votre paiement auprès de Viva.
+        </p>
 
-            <p>
-              Nous vérifions maintenant la confirmation
-              définitive du paiement.
-            </p>
-
-            <p>
-              Votre commande sera préparée pour le créneau
-              Click & Collect sélectionné après validation
-              du paiement.
-            </p>
-          </>
-        ) : (
-          <>
-            <p>
-              {cancelled
-                ? 'Vous avez annulé le paiement.'
-                : 'Le paiement n’a pas pu être finalisé.'}
-            </p>
-
-            <p>
-              Aucun nouveau paiement ne sera tenté
-              automatiquement.
-            </p>
-
-            <p>
-              Vous pouvez retourner à la boutique et
-              recommencer lorsque vous le souhaitez.
-            </p>
-          </>
-        )}
-
-        {orderCode && (
-          <p>
-            Référence commande :{' '}
-            <strong>{orderCode}</strong>
-          </p>
-        )}
-
-        {transactionId && (
-          <p>
-            Référence transaction :{' '}
-            <strong>{transactionId}</strong>
-          </p>
-        )}
-
-        {!success && eventId && (
-          <p>
-            Code Viva :{' '}
-            <strong>{eventId}</strong>
-          </p>
-        )}
-
-        <div style={{ marginTop: '28px' }}>
-          <Link
-            to="/"
-            className="ghost"
-          >
-            Retour à la boutique
-          </Link>
-        </div>
+        <p>
+          Merci de patienter quelques
+          instants.
+        </p>
       </div>
+    )
+  }
+
+  if (verification === 'verified') {
+    return (
+      <div className="legalPage">
+        <div className="eyebrow">
+          LE NOËL DES AMIS
+        </div>
+
+        <h1>Paiement confirmé</h1>
+
+        <p>
+          Merci pour votre commande.
+        </p>
+
+        <p>
+          Votre paiement a été confirmé
+          par Viva.
+        </p>
+
+        <p>
+          Votre commande sera préparée
+          pour le créneau Click & Collect
+          sélectionné.
+        </p>
+
+        <Link to="/" className="ghost">
+          Retour à la boutique
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="legalPage">
+      <div className="eyebrow">
+        LE NOËL DES AMIS
+      </div>
+
+      <h1>
+        Paiement non confirmé
+      </h1>
+
+      <p>
+        Nous n’avons pas pu confirmer
+        définitivement votre paiement.
+      </p>
+
+      {message && <p>{message}</p>}
+
+      <p>
+        Si votre compte a été débité,
+        conservez votre confirmation Viva.
+      </p>
+
+      <Link to="/" className="ghost">
+        Retour à la boutique
+      </Link>
     </div>
   )
 }
